@@ -20,16 +20,19 @@ public class Cart {
     @Column(name = "cart_Id")
     private Long id;
 
-    @OneToOne(fetch = LAZY)
-    @JoinColumn(name = "mbr_Id")
-    private Member member;
+    @Column(name = "cart_No", nullable = false, unique = true)
+    private String cartNo;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "username", referencedColumnName = "username")
+    private Member username;
 
     /*
     * 장바구니에 담긴 상품들(N)을 여기서 관리
     * mappedBy는 CartInfo 엔티티의 'cart' 필드 이름을 적어주세요.
     * Cart 는 연관관계의 주인이 아니기 때문에 CartInfo에 있는 cart 필드가 주인이니까 그걸 참고하라는 뜻
     * */
-    @OneToMany(mappedBy = "cart", cascade = CascadeType.ALL)
+    @OneToMany(mappedBy = "cartNo", cascade = CascadeType.ALL)
     private List<CartInfo> cartInfos = new ArrayList<>();
 
     private LocalDateTime crtdDate = LocalDateTime.now();
@@ -37,13 +40,13 @@ public class Cart {
     // 연관관계 편의 메서드 (이거 있으면 엄청 편합니다!)
     public void addCartInfo(CartInfo cartInfo) {
         cartInfos.add(cartInfo);
-        cartInfo.setCart(this);
+        cartInfo.setCartNo(this);
     }
 
 
-    public Cart(Long id, Member member, List<CartInfo> cartInfos, LocalDateTime crtdDate) {
+    public Cart(Long id, Member username, List<CartInfo> cartInfos, LocalDateTime crtdDate) {
         this.id = id;
-        this.member = member;
+        this.username = username;
         this.cartInfos = cartInfos;
         this.crtdDate = crtdDate;
     }

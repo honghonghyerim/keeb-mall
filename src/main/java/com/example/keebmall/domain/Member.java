@@ -28,7 +28,7 @@ public class Member {
     @Column(nullable = false)
     private String name;
 
-    @OneToOne(fetch = LAZY, mappedBy = "member")
+    @OneToOne(fetch = LAZY, mappedBy = "username")
     private MemberInfo memberInfo;
 
 

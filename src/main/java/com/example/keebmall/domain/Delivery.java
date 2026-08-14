@@ -15,17 +15,20 @@ public class Delivery {
     @Column(name = "dlv_Id")
     private Long id;
 
-    @OneToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "mbr_Id")
-    private Member member;
-
-    @OneToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "order_Id")
-    private Order order;
-
-    private String address;
+    @Column(name = "tracking_No", nullable = false, unique = true)
     private String trackingNo;
 
-    @OneToOne(fetch = LAZY, mappedBy = "delivery")
+    @ManyToOne(fetch = LAZY)
+    @JoinColumn(name = "username", referencedColumnName = "username")
+    private Member username;
+
+    @OneToOne(fetch = LAZY)
+    @JoinColumn(name = "order_No", referencedColumnName = "order_No")
+    private Order orderNo;
+
+    private String address;
+
+
+    @OneToOne(fetch = LAZY, mappedBy = "trackingNo")
     private DeliveryTracking deliveryTracking;
 }

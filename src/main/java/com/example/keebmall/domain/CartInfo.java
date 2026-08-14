@@ -19,12 +19,14 @@ public class CartInfo {
     private Long id;
 
     @ManyToOne(fetch = FetchType.LAZY) // CartInfo 입장에선 내 부모는 Cart!
-    @JoinColumn(name = "cart_Id") // DB의 FK 컬럼명
-    private Cart cart;
+    @JoinColumn(name = "cart_No", referencedColumnName = "cart_No") // DB의 FK 컬럼명
+    private Cart cartNo;
 
-    @ManyToOne(fetch = FetchType.LAZY) // 어떤 상품인지 연결
-    @JoinColumn(name = "prod_Id")
-    private Product product;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "prod_No", referencedColumnName = "prod_No") // DB의 FK 컬럼명
+    private Product prodNo;
+
+    private String prodName;
 
     //cartInfo.getProduct().getProdName() 네임 가져와 쓸수있음 굳이 추가안해도돼
 

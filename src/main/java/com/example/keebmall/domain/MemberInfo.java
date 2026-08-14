@@ -17,17 +17,11 @@ public class MemberInfo {
     private Long id;
 
     @OneToOne(fetch = LAZY)
-    @JoinColumn(name = "mbr_Id")
-    private Member member;
+    @JoinColumn(name = "username", referencedColumnName = "username")
+    private Member username;
 
+    private String postcode;
     private String address;
+    private String detailAddress;
 
-    public MemberInfo(Member member, String address) {
-        this.member = member;
-        this.address = address;
-    }
-
-    protected MemberInfo() {
-
-    }
 }
