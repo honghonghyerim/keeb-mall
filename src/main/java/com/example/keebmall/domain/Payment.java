@@ -15,26 +15,26 @@ public class Payment {
     @Column(name = "pay_Id")
     private Long id;
 
-    @Column(name = "pay_No", nullable = false, unique = true)
-    private String payNo;
+//    @Column(name = "pay_No", nullable = false, unique = true)
+//    private String payNo;
 
     @OneToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "username", referencedColumnName = "username")
-    private Member username;
+    @JoinColumn(name = "mbr_id", nullable = false)
+    private Member member;
 
     @OneToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "order_No", referencedColumnName = "order_No")
-    private Order orderNo;
+    @JoinColumn(name = "order_Id", nullable = false)
+    private Order order;
 
     private String payMthd;
     private int totalPayamnt;
     private String payStatus;
     private LocalDateTime payDate;
 
-    public Payment(Long id, Member username, Order orderNo, String payMthd, int totalPayamnt, String payStatus, LocalDateTime payDate) {
+    public Payment(Long id, Member member, Order order, String payMthd, int totalPayamnt, String payStatus, LocalDateTime payDate) {
         this.id = id;
-        this.username = username;
-        this.orderNo = orderNo;
+        this.member = member;
+        this.order = order;
         this.payMthd = payMthd;
         this.totalPayamnt = totalPayamnt;
         this.payStatus = payStatus;

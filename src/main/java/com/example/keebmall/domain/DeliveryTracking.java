@@ -20,16 +20,16 @@ public class DeliveryTracking {
     private Long id;
 
     @OneToOne(fetch = LAZY)
-    @JoinColumn(name = "tracking_No", referencedColumnName = "tracking_No")
-    private Delivery trackingNo;
+    @JoinColumn(name = "dlv_Id", nullable = false)
+    private Delivery delivery;
 
     private String currLocation;
     private String currStatus;
     private LocalDateTime updtDate;
 
-    public DeliveryTracking(Long id, Delivery trackingNo, String currLocation, String currStatus, LocalDateTime updtDate) {
+    public DeliveryTracking(Long id, Delivery delivery, String currLocation, String currStatus, LocalDateTime updtDate) {
         this.id = id;
-        this.trackingNo = trackingNo;
+        this.delivery = delivery;
         this.currLocation = currLocation;
         this.currStatus = currStatus;
         this.updtDate = updtDate;

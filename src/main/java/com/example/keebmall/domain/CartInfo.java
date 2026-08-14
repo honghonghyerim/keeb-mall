@@ -19,12 +19,12 @@ public class CartInfo {
     private Long id;
 
     @ManyToOne(fetch = FetchType.LAZY) // CartInfo 입장에선 내 부모는 Cart!
-    @JoinColumn(name = "cart_No", referencedColumnName = "cart_No") // DB의 FK 컬럼명
-    private Cart cartNo;
+    @JoinColumn(name = "cart_Id") // DB의 FK 컬럼명
+    private Cart cart;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "prod_No", referencedColumnName = "prod_No") // DB의 FK 컬럼명
-    private Product prodNo;
+    @JoinColumn(name = "prod_Id") // DB의 FK 컬럼명
+    private Product product;
 
     private String prodName;
 

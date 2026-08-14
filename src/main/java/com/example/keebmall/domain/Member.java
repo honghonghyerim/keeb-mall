@@ -28,25 +28,17 @@ public class Member {
     @Column(nullable = false)
     private String name;
 
-    @OneToOne(fetch = LAZY, mappedBy = "username")
+    @OneToOne(mappedBy = "member", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     private MemberInfo memberInfo;
 
+    // 👇 이 연관관계 편의 메서드를 추가해줘!
+    public void setMemberInfo(MemberInfo memberInfo) {
+        this.memberInfo = memberInfo;
+        if (memberInfo != null) {
+            memberInfo.setMember(this); // 자식 객체에도 부모(this)를 쏙 넣어줌
+        }
+    }
 
-
-//    @OneToOne(fetch = LAZY, mappedBy = "member")
-//    private Order Order;
-//
-//    @OneToOne(fetch = LAZY, mappedBy = "member")
-//    private Cart cart;
-//
-//    @OneToOne(fetch = LAZY, mappedBy = "member")
-//    private Payment payment;
-//
-//    @OneToOne(fetch = LAZY, mappedBy = "member")
-//    private Delivery delivery;
-//
-//    @OneToMany(mappedBy = "member", cascade = CascadeType.ALL)
-//    private List<OrderItem> orderItems = new ArrayList<>();
 
     //@JoinColumn을 쓰는 상황: "내가 외래 키(FK)를 가지고 있어!" (테이블에 컬럼이 있는 쪽)
     //

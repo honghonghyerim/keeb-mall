@@ -19,8 +19,8 @@ public class Product {
     @Column(name = "prod_Id")
     private Long id;
 
-    @Column(name = "prod_No", nullable = false, unique = true)
-    private String prodNo;
+//    @Column(name = "prod_No", nullable = false, unique = true)
+//    private String prodNo;
 
     @Column(name = "prod_Name", nullable = false)
     private String name;
@@ -39,7 +39,7 @@ public class Product {
     private String prodStatus;
     private LocalDateTime crtdDate;
 
-    @OneToMany(mappedBy = "prodNo", cascade = CascadeType.ALL)
+    @OneToMany(mappedBy = "product", cascade = CascadeType.ALL)
     private List<CartInfo> cartInfos = new ArrayList<>();
 
 

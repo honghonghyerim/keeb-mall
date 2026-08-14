@@ -17,24 +17,24 @@ public class OrderItem {
     private Long id;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "order_No", referencedColumnName = "order_No")
-    private Order orderNo;
+    @JoinColumn(name = "order_Id", nullable = false)
+    private Order order;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "username", referencedColumnName = "username")
-    private Member username;
+    @JoinColumn(name = "mbr_id", nullable = false)
+    private Member member;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "prod_No", referencedColumnName = "prod_No")
-    private Product prodNo;
+    @JoinColumn(name = "prod_Id", nullable = false)
+    private Product product;
 
     private int totalPayamnt;
     private int amount;
 
-    public OrderItem(Order orderNo, Member username, Product prodNo, int totalPayamnt, int amount) {
-        this.orderNo = orderNo;
-        this.username = username;
-        this.prodNo = prodNo;
+    public OrderItem(Order order, Member member, Product product, int totalPayamnt, int amount) {
+        this.order = order;
+        this.member = member;
+        this.product = product;
         this.totalPayamnt = totalPayamnt;
         this.amount = amount;
     }

@@ -17,8 +17,11 @@ public class MemberInfo {
     private Long id;
 
     @OneToOne(fetch = LAZY)
-    @JoinColumn(name = "username", referencedColumnName = "username")
-    private Member username;
+    @JoinColumn(name = "mbr_id", nullable = false)
+    private Member member;
+
+    @Column(name = "username", nullable = false)
+    private String username;
 
     private String postcode;
     private String address;
