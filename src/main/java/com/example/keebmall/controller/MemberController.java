@@ -1,9 +1,12 @@
 package com.example.keebmall.controller;
 
+import com.example.keebmall.domain.Member;
 import com.example.keebmall.dto.MemberSignupRequestDto;
 import com.example.keebmall.service.MemberService;
+import jakarta.servlet.http.HttpSession;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Controller;
+import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
@@ -15,13 +18,13 @@ public class MemberController {
 
     @GetMapping("/login")
     public String loginPage() {
-        return "login";
+        return "member/login";
     }
 
     // 화면보여주기
     @GetMapping("/signup")
     public String signupPage() {
-        return "signup";
+        return "member/signup";
     }
 
     /*
@@ -57,6 +60,34 @@ public class MemberController {
             return "redirect:/signup";
         }
     }
+
+    @PostMapping("/login")
+    public String login(@RequestParam("username") String username,
+                        @RequestParam("password") String password,
+                        HttpSession session,
+                        Model model) {
+
+        Member loginMember = memberService.login(username, password);
+
+        if (loginMember == null) {
+            // 로그인 실패 시 에러 메시지 전달 (나중에 HTML에 띄워도 좋음)
+            model.addAttribute("loginError", "아이디 또는 비밀번호가 올바르지 않습니다.");
+            return "member/login";
+        }
+
+        // 로그인 성공! 세션에 회원 정보 저장 (세션 유지 시간 등은 기본값 사용)
+        session.setAttribute("loginUser", loginMember);
+
+        // 성공 후 메인 페이지로 이동
+        return "redirect:/";
+    }
+
+    @GetMapping("/logout")
+    public String logout(HttpSession session) {
+        session.invalidate(); // 세션 폭파 (로그인 상태 및 정보 제거)
+        return "redirect:/login"; // 로그인 화면으로 이동
+    }
+
 
 
 }

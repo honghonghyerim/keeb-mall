@@ -15,6 +15,13 @@
         if (successMsg && successMsg !== "null" && successMsg !== "") {
             alert(successMsg);
         }
+
+        const errorMsg = "[[${loginError}]]";
+
+        if (errorMsg && errorMsg !== "null" && errorMsg !== "") {
+            alert(errorMsg);
+        }
+
     </script>
 
 
@@ -44,6 +51,12 @@
 
             <!-- 회원가입 버튼 -->
             <a href="/signup" class="btn btn-outline-secondary w-100">회원가입</a>
+
+            <!-- 메인으로 돌아가기 버튼 (텍스트 링크 스타일) -->
+            <div class="text-center mt-3">
+                <a href="/" class="text-muted text-decoration-none" style="font-size: 14px;">메인으로 돌아가기</a>
+            </div>
+
         </form>
     </div>
 

@@ -46,5 +46,22 @@ public class MemberService {
         return memberRepository.findByUsername(username).isPresent();
     }
 
+    public Member login(String username, String password) {
+        // 1. 아이디로 회원 조회
+        Member member = memberRepository.findByUsername(username)
+                .orElse(null); // 없으면 null 리턴
+
+        if (member == null) {
+            return null;
+        }
+
+        // 2. 평문 비밀번호와 DB의 암호화된 비밀번호 일치 여부 확인
+        if (!passwordEncoder.matches(password, member.getPassword())) {
+            return null; // 비밀번호 불일치
+        }
+
+        return member; // 로그인 성공 시 회원 객체 리턴
+    }
+
 
 }
