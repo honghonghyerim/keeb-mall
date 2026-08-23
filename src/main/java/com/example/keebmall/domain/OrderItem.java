@@ -28,6 +28,8 @@ public class OrderItem {
     @JoinColumn(name = "prod_Id", nullable = false)
     private Product product;
 
+    private String prodName;
+
     private int totalPayamnt;
     private int amount;
 

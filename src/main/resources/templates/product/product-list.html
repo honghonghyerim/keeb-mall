@@ -216,24 +216,24 @@
     <!-- 상품 카드 그리드 영역 -->
     <div class="row row-cols-1 row-cols-md-3 g-4">
         <!-- 데이터가 없을 때 -->
-        <div class="col-12 text-center py-5" th:if="${#lists.isEmpty(keyboardList)}">
+        <div class="col-12 text-center py-5" th:if="${#lists.isEmpty(productList)}">
             <p class="text-muted fs-5">등록된 상품이 없습니다.</p>
         </div>
 
         <!-- 데이터가 있을 때 반복문 (th:each) -->
-        <div class="col" th:each="keyboard : ${keyboardList}">
+        <div class="col" th:each="product : ${productList}">
             <div class="card h-100 shadow-sm border-0">
                 <!-- 이미지 클릭 시 상세 페이지로 이동 (/product/detail/{id}) -->
-                <a th:href="@{/product/detail/{id}(id=${keyboard.id})}">
-                    <img th:src="${keyboard.imgUrl}" class="card-img-top object-fit-cover" style="height: 240px;" alt="키보드 이미지">
+                <a th:href="@{/product/detail/{id}(id=${product.id})}">
+                    <img th:src="${product.imgUrl}" class="card-img-top object-fit-cover" style="height: 240px;" alt="키보드 이미지">
                 </a>
                 <div class="card-body">
                     <!-- 키보드 네임 -->
                     <h5 class="card-title fw-bold text-dark">
-                        <a th:href="@{/product/detail/{id}(id=${keyboard.id})}" class="text-decoration-none text-dark" th:text="${keyboard.name}">키보드 이름</a>
+                        <a th:href="@{/product/detail/{id}(id=${product.id})}" class="text-decoration-none text-dark" th:text="${product.name}">키보드 이름</a>
                     </h5>
                     <!-- 가격 및 간단 정보 -->
-                    <p class="card-text text-primary fw-bold mt-2" th:text="${#numbers.formatInteger(keyboard.price, 3, 'COMMA') + '원'}">159,000원</p>
+                    <p class="card-text text-primary fw-bold mt-2" th:text="${#numbers.formatInteger(product.price, 3, 'COMMA') + '원'}">159,000원</p>
                 </div>
             </div>
         </div>

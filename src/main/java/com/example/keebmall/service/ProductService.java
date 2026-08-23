@@ -7,6 +7,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
@@ -18,7 +19,7 @@ public class ProductService {
 
     public List<Product> getProducts(String category, String type) {
 
-        String ctgCd = convertCategoryToCode(category);
+        String ctgCd = convertCategoryToCode(category); // html category url 숫자로 변환
 
         if (type == null || type.isEmpty()) {
             return productRepository.findByProdCtgCd(ctgCd);
@@ -27,6 +28,11 @@ public class ProductService {
         String typeCd = convertTypeToCode(category, type);
         return productRepository.findByProdCtgCdAndProdTypeCd(ctgCd, typeCd);
 
+    }
+
+    public Product getProdDetail(Long prod) {
+        return productRepository.findById(prod)
+                .orElseThrow(() -> new IllegalArgumentException("해당 상품이 존재하지 않습니다."));
     }
 
     // 대분류 코드 매핑 (키보드: 1, 스위치: 2, 키캡: 3)

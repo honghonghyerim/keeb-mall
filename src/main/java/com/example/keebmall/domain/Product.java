@@ -43,6 +43,7 @@ public class Product {
     private List<CartInfo> cartInfos = new ArrayList<>();
 
 
+
 //    만약 상품 상세에서 주문 내역을 직접 꺼내볼 일이 없다면 아래 연관관계는 빼도 됨
 //    @OneToMany(mappedBy = "product", cascade = CascadeType.ALL)
 //    private List<OrderItem> orderItems = new ArrayList<>();

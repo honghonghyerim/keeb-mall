@@ -26,9 +26,8 @@ public class CartInfo {
     @JoinColumn(name = "prod_Id") // DB의 FK 컬럼명
     private Product product;
 
-    private String prodName;
+//    private String prodName; //cartInfo.getProduct().getProdName();  // 네임 가져와 쓸수있음 굳이 추가안해도돼
 
-    //cartInfo.getProduct().getProdName() 네임 가져와 쓸수있음 굳이 추가안해도돼
 
     private int count;
 }
