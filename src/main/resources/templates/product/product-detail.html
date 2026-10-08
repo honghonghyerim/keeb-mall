@@ -271,11 +271,26 @@
     <script>
         // 수량 감소
         function minusCount() {
+
             const count = document.getElementById('count');
+            const price = document.getElementById('price');
+
             let value = parseInt(count.innerText);
+            let total = price.value;
+
+            console.log(price.value);
+            console.log(document.getElementById('price').get);
+            // console.log("나"+total);
+            // console.log("다"+value * total);
+            // console.log("라"+value);
+
             if (value > 1) {
                 count.innerText = value - 1;
+                price.innerText = value * total;
+
+
             }
+
         }
 
         // 수량 증가
@@ -367,7 +382,7 @@
 
         <!-- 3. 배송안내 -->
         <div class="delivery-info">
-            [배송안내] 평일 오후 2시 이전 결제 시 당일 출송 (CJ대한통운)
+            [배송안내] 평일 오후 2시 이전 결제 시 당일 발송 (CJ대한통운)
         </div>
 
         <!-- 4. 키보드 옵션 (콤보박스) -->
@@ -375,9 +390,10 @@
             <label for="keyboard-option">키보드 옵션 선택</label>
             <select id="keyboard-option">
                 <option value="" disabled selected>옵션을 선택해주세요</option>
-                <option value="switch-A">경해축 (리니어)</option>
-                <option value="switch-B">래퍼드축 (택타일)</option>
-                <option value="switch-C">그레이우드축</option>
+                <option th:each="product : ${product}"
+                        th:value="${product.kbdLayout}"
+                        th:text="${product.kbdLayout}">
+                </option>
             </select>
         </div>
 
@@ -386,9 +402,10 @@
             <label for="keyboard-color">색상 선택</label>
             <select id="keyboard-color">
                 <option value="" disabled selected>색상을 선택해주세요</option>
-                <option value="black">블랙 다크그레이</option>
-                <option value="white">화이트 실버</option>
-                <option value="pink">퍼플 핑크</option>
+                <option th:each="product : ${product}"
+                        th:value="${product.kbdColor}"
+                        th:text="${product.kbdColor}">
+                </option>
             </select>
         </div>
 
@@ -405,7 +422,8 @@
                     <button type="button" onclick="plusCount()">+</button>
                 </div>
                 <!-- 가격 -->
-                <div class="calculated-price">159,000원</div>
+                <div class="calculated-price" id="price" th:value="${product.price}" th:text="${#numbers.formatInteger(product.price, 3, 'COMMA') + '원'}">159,000원
+                </div>
             </div>
         </div>
 
