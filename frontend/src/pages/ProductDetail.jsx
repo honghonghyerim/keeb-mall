@@ -1,28 +1,46 @@
 import React, { useState, useEffect } from 'react';
-import { useParams } from 'react-router-dom';
+import { useParams, useNavigate } from 'react-router-dom';
 import { getProductDetailApi } from '../api/productApi';
+import { addToCartApi } from '../api/cartApi';
+import { checkSessionApi } from '../api/authApi'
 import HeaderNav from '../components/HeaderNav';
-import './ProductDetail.css';
+import '../css/ProductDetail.css';
 
 function ProductDetail() {
-    const { id } = useParams(); // URL 경로의 상품 ID (/product/detail/:id)
+    const { id } = useParams();
+    const navigate = useNavigate();
 
     const [product, setProduct] = useState(null);
     const [loading, setLoading] = useState(true);
 
-    // 선택 옵션 상태 관리
     const [selectedLayout, setSelectedLayout] = useState('');
     const [selectedColor, setSelectedColor] = useState('');
     const [quantity, setQuantity] = useState(1);
 
-    // 상품 정보 조회
+    // ★ 로그인 여부 유연 판단 (세션 쿠키 및 스토리지 통합 체크)
+    const checkIsLoggedIn = () => {
+        const hasStorageUser =
+            !!localStorage.getItem('member') ||
+            !!localStorage.getItem('user') ||
+            !!localStorage.getItem('token') ||
+            !!sessionStorage.getItem('member') ||
+            !!sessionStorage.getItem('user');
+
+        const hasSessionCookie = document.cookie.includes('JSESSIONID');
+
+        // 세션 쿠키가 있거나, 스토리지에 유저 정보가 하나라도 있으면 로그인 상태로 인정
+        return hasStorageUser || hasSessionCookie;
+    };
+
+    const isLoggedIn = checkIsLoggedIn();
+
     useEffect(() => {
         const fetchProductDetail = async () => {
             setLoading(true);
             try {
                 const data = await getProductDetailApi(id);
                 setProduct(data);
-                // 백엔드에서 받아온 기본 옵션이 있다면 설정
+
                 if (data.kbdLayout) setSelectedLayout(data.kbdLayout);
                 if (data.kbdColor) setSelectedColor(data.kbdColor);
             } catch (error) {
@@ -35,16 +53,74 @@ function ProductDetail() {
         fetchProductDetail();
     }, [id]);
 
-    // 수량 감소 (-)
-    const handleMinusCount = () => {
-        if (quantity > 1) {
-            setQuantity((prev) => prev - 1);
-        }
+    const handleLayoutChange = (e) => {
+        const newLayout = e.target.value;
+        setSelectedLayout(newLayout);
+        setSelectedColor('');
     };
 
-    // 수량 증가 (+)
+    const handleMinusCount = () => {
+        if (quantity > 1) setQuantity((prev) => prev - 1);
+    };
     const handlePlusCount = () => {
         setQuantity((prev) => prev + 1);
+    };
+
+    const isKeyboard =
+        product?.prodCtgCd === '1' ||
+        product?.prodCtgCd === 'keyboard' ||
+        product?.prodCtgNm === '키보드';
+
+    const selectedOption =
+        isKeyboard && product?.productOptions
+            ? product.productOptions.find(
+                (opt) => opt.kbdLayout === selectedLayout && opt.kbdColor === selectedColor
+            )
+            : null;
+
+    const unitPrice = product?.price || 0;
+    const totalPrice = unitPrice * quantity;
+
+    // ★ 장바구니 담기 핸들러
+    const handleAddToCart = async () => {
+        // 1. [★ 최우선] 로그인 상태 검사 (/api/me 호출)
+        try {
+            await checkSessionApi();
+        } catch (error) {
+            // 비회원(401) 상태이면 옵션 검사할 필요도 없이 즉시 차단
+            alert('로그인 후 이용해주세요');
+            return;
+        }
+
+        // 2. 로그인된 회원인 경우에만 옵션 선택 유효성 검사
+        if (isKeyboard) {
+            if (!selectedLayout) {
+                alert('키보드 옵션을 선택해주세요!');
+                return;
+            }
+            if (!selectedColor) {
+                alert('색상 옵션을 선택해주세요!');
+                return;
+            }
+        }
+
+        // 3. 장바구니 담기 API 호출
+        try {
+            const cartRequest = {
+                productId: product.id,
+                optionId: selectedOption ? selectedOption.id : null,
+                count: quantity
+            };
+
+            await addToCartApi(cartRequest);
+
+            if (window.confirm('장바구니에 상품을 담았습니다.\n장바구니 페이지로 이동하시겠습니까?')) {
+                navigate('/cart');
+            }
+        } catch (error) {
+            console.error('장바구니 담기 실패:', error);
+            alert('장바구니 담기에 실패했습니다.');
+        }
     };
 
     if (loading) {
@@ -71,17 +147,11 @@ function ProductDetail() {
         );
     }
 
-    // 총 금액 자동 계산 (단가 * 수량)
-    const totalPrice = (product.price || 0) * quantity;
-
     return (
         <div className="bg-light min-vh-100">
-            {/* 공통 헤더 & 네비바 */}
             <HeaderNav />
 
-            {/* 메인 상세 컨테이너 */}
             <div className="detail-container my-5">
-                {/* 왼쪽: 상품 이미지 */}
                 <div className="detail-left">
                     <img
                         src={product.imgUrl || 'https://via.placeholder.com/400'}
@@ -90,74 +160,89 @@ function ProductDetail() {
                     />
                 </div>
 
-                {/* 오른쪽: 상품 정보 및 옵션 */}
                 <div className="detail-right text-start">
-                    {/* 1. 키보드 이름 */}
                     <div className="product-name">{product.name}</div>
-
-                    {/* 2. 가격 */}
                     <div className="product-price">
-                        {product.price?.toLocaleString()}원
+                        {unitPrice.toLocaleString()}원
                     </div>
 
-                    {/* 3. 배송안내 */}
                     <div className="delivery-info">
                         [배송안내] 평일 오후 2시 이전 결제 시 당일 발송 (CJ대한통운)
                     </div>
 
-                    {/* 4. 키보드 옵션 (배열 선택) */}
-                    <div className="option-group">
-                        <label htmlFor="keyboard-option">키보드 옵션 선택</label>
-                        <select
-                            id="keyboard-option"
-                            value={selectedLayout}
-                            onChange={(e) => setSelectedLayout(e.target.value)}
-                        >
-                            <option value="" disabled>옵션을 선택해주세요</option>
-                            {product.kbdLayout && (
-                                <option value={product.kbdLayout}>{product.kbdLayout}</option>
-                            )}
-                        </select>
-                    </div>
+                    {isKeyboard && (
+                        <>
+                            <div className="option-group">
+                                <label htmlFor="keyboard-option">키보드 옵션 선택</label>
+                                <select
+                                    id="keyboard-option"
+                                    value={selectedLayout}
+                                    onChange={handleLayoutChange}
+                                >
+                                    <option value="" disabled>옵션을 선택해주세요</option>
+                                    {product.productOptions && product.productOptions.length > 0 ? (
+                                        [...new Set(product.productOptions.map((opt) => opt.kbdLayout))].map((layout, idx) => (
+                                            <option key={idx} value={layout}>{layout}</option>
+                                        ))
+                                    ) : (
+                                        product.kbdLayout && <option value={product.kbdLayout}>{product.kbdLayout}</option>
+                                    )}
+                                </select>
+                            </div>
 
-                    {/* 5. 색상 선택 */}
-                    <div className="option-group">
-                        <label htmlFor="keyboard-color">색상 선택</label>
-                        <select
-                            id="keyboard-color"
-                            value={selectedColor}
-                            onChange={(e) => setSelectedColor(e.target.value)}
-                        >
-                            <option value="" disabled>색상을 선택해주세요</option>
-                            {product.kbdColor && (
-                                <option value={product.kbdColor}>{product.kbdColor}</option>
-                            )}
-                        </select>
-                    </div>
+                            <div className="option-group">
+                                <label htmlFor="keyboard-color">색상 선택</label>
+                                <select
+                                    id="keyboard-color"
+                                    value={selectedColor}
+                                    onChange={(e) => setSelectedColor(e.target.value)}
+                                    disabled={!selectedLayout}
+                                >
+                                    <option value="" disabled>
+                                        {selectedLayout ? '색상을 선택해주세요' : '배열 옵션을 먼저 선택해주세요'}
+                                    </option>
+                                    {product.productOptions && product.productOptions.length > 0 ? (
+                                        [...new Set(
+                                            product.productOptions
+                                                .filter((opt) => opt.kbdLayout === selectedLayout)
+                                                .map((opt) => opt.kbdColor)
+                                        )].map((color, idx) => (
+                                            <option key={idx} value={color}>{color}</option>
+                                        ))
+                                    ) : (
+                                        product.kbdColor && <option value={product.kbdColor}>{product.kbdColor}</option>
+                                    )}
+                                </select>
+                            </div>
+                        </>
+                    )}
 
-                    {/* 하단 옵션 요약 & 수량/금액 계산 박스 */}
                     <div className="selected-option-box">
-                        <div className="selected-info-text">
-                            선택옵션 : {selectedLayout || '미선택'} / {selectedColor || '미선택'}
-                        </div>
+                        {isKeyboard && (selectedLayout || selectedColor) && (
+                            <div className="selected-info-text">
+                                선택옵션 : {[selectedLayout, selectedColor].filter(Boolean).join(' / ')}
+                            </div>
+                        )}
+
                         <div className="quantity-price-row">
-                            {/* 수량 컨트롤러 */}
                             <div className="quantity-controller">
                                 <button type="button" onClick={handleMinusCount}>-</button>
                                 <span>{quantity}</span>
                                 <button type="button" onClick={handlePlusCount}>+</button>
                             </div>
-                            {/* 계산된 가격 */}
                             <div className="calculated-price">
                                 {totalPrice.toLocaleString()}원
                             </div>
                         </div>
                     </div>
 
-                    {/* 구매하기 & 장바구니 버튼 */}
                     <div className="button-group">
-                        <button type="button" className="btn btn-cart">장바구니</button>
-                        <button type="button" className="btn btn-buy">구매하기</button>
+                        <button type="button" className="btn btn-cart" onClick={handleAddToCart}>
+                            장바구니
+                        </button>
+                        <button type="button" className="btn btn-buy">
+                            구매하기
+                        </button>
                     </div>
                 </div>
             </div>

@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { checkSessionApi, logoutApi } from '../api/authApi';
-import '../pages/Main.css'; // 공통 헤더 및 네비바 스타일 적용
+import '../css/Main.css'; // 공통 헤더 및 네비바 스타일 적용
 
 function HeaderNav() {
     const navigate = useNavigate();

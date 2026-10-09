@@ -26,6 +26,11 @@ public class CartInfo {
     @JoinColumn(name = "prod_Id") // DB의 FK 컬럼명
     private Product product;
 
+    // 옵션을 선택했는지 (키보드 전용 - 옵션 없으면 null) 추가!
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "option_id")
+    private ProductOption productOption;
+
 //    private String prodName; //cartInfo.getProduct().getProdName();  // 네임 가져와 쓸수있음 굳이 추가안해도돼
 
 

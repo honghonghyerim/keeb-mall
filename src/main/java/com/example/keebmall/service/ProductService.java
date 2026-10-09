@@ -1,6 +1,8 @@
 package com.example.keebmall.service;
 
 import com.example.keebmall.domain.Product;
+import com.example.keebmall.dto.ProductDetailDto;
+import com.example.keebmall.dto.ProductDto;
 import com.example.keebmall.repository.ProductRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -8,6 +10,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -17,27 +20,43 @@ public class ProductService {
     private final ProductRepository productRepository;
 
 
-    public List<Product> getProducts(String category, String type) {
+    public List<ProductDto> getProducts(String category, String type) {
 
         String ctgCd = convertCategoryToCode(category); // html category url 숫자로 변환
 
-        if (type == null || type.isEmpty()) {
-            return productRepository.findByProdCtgCd(ctgCd);
+        // 1. 전체 상품 조회 (/api/products)
+        if (category == null || category.isEmpty()) {
+            return productRepository.findAll().stream()
+                    .map(ProductDto::new)
+                    .collect(Collectors.toList());
         }
 
-        String typeCd = convertTypeToCode(category, type);
-        return productRepository.findByProdCtgCdAndProdTypeCd(ctgCd, typeCd);
+        List<Product> products;
+        if (type == null || type.isEmpty()) {
+            products = productRepository.findByProdCtgCd(ctgCd);
+        } else {
+            String typeCd = convertTypeToCode(category, type);
+            products = productRepository.findByProdCtgCdAndProdTypeCd(ctgCd, typeCd);
+        }
+
+
+        return products.stream()
+                .map(ProductDto::new)
+                .collect(Collectors.toList());
 
     }
 
-    public Product getProdDetail(Long prod) {
-        return productRepository.findById(prod)
-                .orElseThrow(() -> new IllegalArgumentException("해당 상품이 존재하지 않습니다."));
+    // 상품 상세 조회 (옵션 포함 DTO로 변환)
+    public ProductDetailDto getProdDetail(Long prodId) {
+        Product product = productRepository.findDetailById(prodId)
+                .orElseThrow(() -> new IllegalArgumentException("해당 상품이 존재하지 않습니다. ID: " + prodId));
+
+        return new ProductDetailDto(product);
     }
 
     // 대분류 코드 매핑 (키보드: 1, 스위치: 2, 키캡: 3)
     private String convertCategoryToCode(String category) {
-        if (category == null) return "1"; // 혹시 모를 방어 코드
+        if (category == null) return "1";
         switch (category.toLowerCase()) {
             case "keyboard": return "1";
             case "switch":   return "2";
