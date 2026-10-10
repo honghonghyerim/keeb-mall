@@ -1,6 +1,7 @@
 package com.example.keebmall.controller;
 
 import com.example.keebmall.domain.Member;
+import com.example.keebmall.dto.MemberResponseDto;
 import com.example.keebmall.dto.MemberSignupRequestDto;
 import com.example.keebmall.service.MemberService;
 import jakarta.servlet.http.HttpSession;
@@ -62,18 +63,16 @@ public class MemberController {
         return ResponseEntity.ok("로그인 성공");
     }
 
-    // 세션 확인 API (리액트가 메인화면 켜질 때 호출하는 주소)
     @GetMapping("/me")
     public ResponseEntity<?> getLoginUser(HttpSession session) {
         Member loginUser = (Member) session.getAttribute("loginUser");
 
         if (loginUser == null) {
-            // 세션에 로그인 정보가 없으면 401 에러
             return ResponseEntity.status(401).body("비로그인 상태입니다.");
         }
 
-        // 로그인 상태이면 회원 정보 응답 (HTTP 200 OK)
-        return ResponseEntity.ok(loginUser);
+        // 엔티티 대신 DTO로 변환하여 응답
+        return ResponseEntity.ok(new MemberResponseDto(loginUser));
     }
 
     @PostMapping("/logout")

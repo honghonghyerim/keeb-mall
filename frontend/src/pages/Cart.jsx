@@ -114,15 +114,16 @@ function Cart() {
             alert('장바구니가 비어있습니다.');
             return;
         }
-        alert('전체 상품 주문 페이지로 이동합니다.');
-    };
+        navigate('/order', { state: { orderItems: cartList } });
+    }
 
     const handleOrderSelected = () => {
         if (selectedIds.length === 0) {
             alert('주문할 상품을 선택해주세요.');
             return;
         }
-        alert('선택한 상품 주문 페이지로 이동합니다.');
+        const targetItems = cartList.filter((item) => selectedIds.includes(item.cartInfoId));
+        navigate('/order', { state: { orderItems: targetItems } });
     };
 
     // 선택된 상품들의 금액 및 배송비 계산
@@ -324,6 +325,7 @@ function Cart() {
                             </button>
 
                             <button
+                                // to="/order"
                                 type="button"
                                 className="btn btn-secondary btn-lg px-4 py-3 fw-bold border-0"
                                 onClick={handleOrderSelected}

@@ -24,3 +24,9 @@ logging:
     org.hibernate: WARN
     org.hibernate.orm.jdbc.bind: TRACE
     com.example.keebmall: DEBUG
+
+kakaopay:
+  cid: TC0ONETIME
+  admin-key: f61b5c23fa57afa19fb3f247ea110d61
+  ready-url: https://kapi.kakao.com/v1/payment/ready
+  approve-url: https://kapi.kakao.com/v1/payment/approve

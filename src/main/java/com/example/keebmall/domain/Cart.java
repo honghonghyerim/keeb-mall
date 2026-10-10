@@ -35,7 +35,6 @@ public class Cart {
     @OneToMany(mappedBy = "cart", cascade = CascadeType.ALL)
     private List<CartInfo> cartInfos = new ArrayList<>();
 
-    private LocalDateTime crtdDate = LocalDateTime.now();
 
     // 연관관계 편의 메서드 (이거 있으면 엄청 편합니다!)
 //    public void addCartInfo(CartInfo cartInfo) {
@@ -44,11 +43,10 @@ public class Cart {
 //    }
 
 
-    public Cart(Long id, Member member, List<CartInfo> cartInfos, LocalDateTime crtdDate) {
+    public Cart(Long id, Member member, List<CartInfo> cartInfos ) {
         this.id = id;
         this.member = member;
         this.cartInfos = cartInfos;
-        this.crtdDate = crtdDate;
     }
 
 

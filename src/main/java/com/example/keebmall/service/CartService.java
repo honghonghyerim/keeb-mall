@@ -56,12 +56,21 @@ public class CartService {
         if (existingCartInfo.isPresent()) {
             CartInfo cartInfo = existingCartInfo.get();
             cartInfo.setCount(cartInfo.getCount() + requestDto.getCount());
+
+            // ★ 결제 완료('Y')로 바뀌었던 기존 항목을 다시 담는 경우를 대비해 'N'으로 복구 및 시간 갱신
+            cartInfo.setStatus("N");
+            cartInfo.setCrtdDate(java.time.LocalDateTime.now());
         } else {
             CartInfo cartInfo = new CartInfo();
             cartInfo.setCart(cart);
             cartInfo.setProduct(product);
             cartInfo.setProductOption(option);
             cartInfo.setCount(requestDto.getCount());
+
+            // ★ [여기입니다!] 새 장바구니 아이템 생성 시 기본값(status, crtdDate) 직접 세팅!
+            cartInfo.setStatus("N");
+            cartInfo.setCrtdDate(java.time.LocalDateTime.now());
+
             cartInfoRepository.save(cartInfo);
         }
     }

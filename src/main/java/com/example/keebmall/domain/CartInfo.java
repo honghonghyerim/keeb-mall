@@ -5,6 +5,7 @@ import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
 
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -31,8 +32,26 @@ public class CartInfo {
     @JoinColumn(name = "option_id")
     private ProductOption productOption;
 
+    @Column(name = "status", nullable = false)
+    private String status = "N";
+
+    @Column(name = "crtd_date")
+    private LocalDateTime crtdDate;
+
+    private int count;
+
+    @PrePersist
+    public void prePersist() {
+        if (this.status == null) {
+            this.status = "N";
+        }
+        if (this.crtdDate == null) {
+            this.crtdDate = LocalDateTime.now();
+        }
+    }
+
 //    private String prodName; //cartInfo.getProduct().getProdName();  // 네임 가져와 쓸수있음 굳이 추가안해도돼
 
 
-    private int count;
+
 }

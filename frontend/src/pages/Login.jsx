@@ -18,7 +18,6 @@ function Login() {
         try {
             // 스프링 부트 로그인 API 호출
             await loginApi(username, password);
-            alert('로그인 성공!');
             navigate('/'); // 로그인 성공 시 메인 화면으로 이동
         } catch (error) {
             // 기존 Thymeleaf의 loginError 처리 -> 화면 자동 업데이트
