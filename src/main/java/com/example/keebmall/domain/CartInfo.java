@@ -6,8 +6,6 @@ import lombok.Getter;
 import lombok.Setter;
 
 import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.List;
 
 @Entity
 @Getter @Setter
@@ -20,38 +18,40 @@ public class CartInfo {
     private Long id;
 
     @ManyToOne(fetch = FetchType.LAZY) // CartInfo 입장에선 내 부모는 Cart!
-    @JoinColumn(name = "cart_Id") // DB의 FK 컬럼명
+    @JoinColumn(name = "cart_Id", nullable = false) // DB의 FK 컬럼명
     private Cart cart;
 
+    // 어떤 상품인지
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "prod_Id") // DB의 FK 컬럼명
+    @JoinColumn(name = "prod_id", nullable = false)
     private Product product;
 
-    // 옵션을 선택했는지 (키보드 전용 - 옵션 없으면 null) 추가!
+    // 선택 옵션이 없는 상품은 null
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "option_id")
     private ProductOption productOption;
 
-    @Column(name = "status", nullable = false)
-    private String status = "N";
+    // 상품 수량
+    @Column(name = "count", nullable = false)
+    private int count;
 
-    @Column(name = "crtd_date")
+    // 장바구니에 처음 담은 시각
+    @Column(name = "crtd_date", nullable = false)
     private LocalDateTime crtdDate;
 
-    private int count;
+    // 장바구니 만료 시각
+    @Column(name = "expires_at", nullable = false)
+    private LocalDateTime expiresAt;
 
     @PrePersist
     public void prePersist() {
-        if (this.status == null) {
-            this.status = "N";
-        }
         if (this.crtdDate == null) {
             this.crtdDate = LocalDateTime.now();
         }
+
+        if (this.expiresAt == null) {
+            this.expiresAt = this.crtdDate.plusHours(24);
+        }
     }
-
-//    private String prodName; //cartInfo.getProduct().getProdName();  // 네임 가져와 쓸수있음 굳이 추가안해도돼
-
-
 
 }

@@ -20,53 +20,82 @@ public class CartController {
 
     private final CartService cartService;
 
-    // 1. 장바구니 담기 API
+    // 1. 장바구니 담기
     @PostMapping("/add")
-    public ResponseEntity<?> addToCart(@RequestBody CartRequestDto requestDto, HttpSession session) {
+    public ResponseEntity<?> addToCart(
+            @RequestBody CartRequestDto requestDto,
+            HttpSession session) {
+
         Member loginUser = (Member) session.getAttribute("loginUser");
+
         if (loginUser == null) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("회원가입 후 이용해주세요");
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                    .body("로그인 후 이용해주세요.");
         }
 
-        cartService.addToCart(requestDto, loginUser); // ★ loginUser 전달
+        cartService.addToCart(requestDto, loginUser);
+
         return ResponseEntity.ok("장바구니에 담겼습니다.");
     }
 
-    // 2. 장바구니 목록 조회 API
-    @GetMapping("")
+    // 2. 장바구니 목록 조회
+    @GetMapping
     public ResponseEntity<?> getCartList(HttpSession session) {
+
         Member loginUser = (Member) session.getAttribute("loginUser");
+
         if (loginUser == null) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("비로그인 상태입니다.");
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                    .body("로그인이 필요합니다.");
         }
 
-        List<CartResponseDto> cartList = cartService.getCartList(loginUser); // ★ loginUser 전달
+        List<CartResponseDto> cartList =
+                cartService.getCartList(loginUser);
+
         return ResponseEntity.ok(cartList);
     }
 
-    // 3. 수량 변경
+    // 3. 장바구니 수량 변경
     @PutMapping("/{id}")
-    public ResponseEntity<?> updateCartCount(@PathVariable("id") Long cartInfoId,
-                                             @RequestBody Map<String, Integer> request,
-                                             HttpSession session) {
+    public ResponseEntity<?> updateCartCount(
+            @PathVariable("id") Long cartInfoId,
+            @RequestBody Map<String, Integer> request,
+            HttpSession session) {
+
         Member loginUser = (Member) session.getAttribute("loginUser");
+
         if (loginUser == null) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("비로그인 상태입니다.");
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                    .body("로그인이 필요합니다.");
         }
 
-        cartService.updateCartCount(cartInfoId, request.get("count"));
+        Integer count = request.get("count");
+
+        if (count == null || count <= 0) {
+            return ResponseEntity.badRequest()
+                    .body("수량은 1개 이상이어야 합니다.");
+        }
+
+        cartService.updateCartCount(cartInfoId, count, loginUser);
+
         return ResponseEntity.ok("수량이 변경되었습니다.");
     }
 
-    // 4. 단일 삭제
+    // 4. 장바구니 항목 삭제
     @DeleteMapping("/{id}")
-    public ResponseEntity<?> deleteCartItem(@PathVariable("id") Long cartInfoId, HttpSession session) {
+    public ResponseEntity<?> deleteCartItem(
+            @PathVariable("id") Long cartInfoId,
+            HttpSession session) {
+
         Member loginUser = (Member) session.getAttribute("loginUser");
+
         if (loginUser == null) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("비로그인 상태입니다.");
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                    .body("로그인이 필요합니다.");
         }
 
-        cartService.deleteCartItem(cartInfoId);
+        cartService.deleteCartItem(cartInfoId, loginUser);
+
         return ResponseEntity.ok("삭제되었습니다.");
     }
 }

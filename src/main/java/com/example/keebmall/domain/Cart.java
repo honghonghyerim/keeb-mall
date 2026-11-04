@@ -4,11 +4,9 @@ import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
 
-import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
-import static jakarta.persistence.FetchType.LAZY;
 
 @Entity
 @Getter @Setter
@@ -20,11 +18,9 @@ public class Cart {
     @Column(name = "cart_Id")
     private Long id;
 
-//    @Column(name = "cart_No", nullable = false, unique = true)
-//    private String cartNo;
-
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "mbr_id")
+    // 회원 한 명당 장바구니 하나
+    @OneToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "mbr_id", nullable = false, unique = true)
     private Member member;
 
     /*
@@ -32,25 +28,16 @@ public class Cart {
     * mappedBy는 CartInfo 엔티티의 'cart' 필드 이름을 적어주세요.
     * Cart 는 연관관계의 주인이 아니기 때문에 CartInfo에 있는 cart 필드가 주인이니까 그걸 참고하라는 뜻
     * */
-    @OneToMany(mappedBy = "cart", cascade = CascadeType.ALL)
+    @OneToMany(mappedBy = "cart", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<CartInfo> cartInfos = new ArrayList<>();
 
 
-    // 연관관계 편의 메서드 (이거 있으면 엄청 편합니다!)
-//    public void addCartInfo(CartInfo cartInfo) {
-//        cartInfos.add(cartInfo);
-//        cartInfo.setId(this.getId());
-//    }
-
-
-    public Cart(Long id, Member member, List<CartInfo> cartInfos ) {
-        this.id = id;
-        this.member = member;
-        this.cartInfos = cartInfos;
+    // 연관관계 편의 메서드
+    public void addCartInfo(CartInfo cartInfo) {
+        cartInfos.add(cartInfo);
+        cartInfo.setCart(this);
     }
 
-
-    public Cart() {
-
+    public  Cart() {
     }
 }

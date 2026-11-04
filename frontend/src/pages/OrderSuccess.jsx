@@ -3,8 +3,8 @@ import { useSearchParams, Link } from 'react-router-dom';
 import HeaderNav from '../components/HeaderNav';
 
 function OrderSuccess() {
-    const [searchParams] = useSearchParams();
-    const orderId = searchParams.get('orderId');
+    const params = new URLSearchParams(window.location.search);
+    const orderNo = params.get('orderNo');
 
     return (
         <div className="bg-light min-vh-100">
@@ -16,7 +16,7 @@ function OrderSuccess() {
                     </div>
                     <h3 className="fw-bold text-dark mb-3">주문 및 결제가 완료되었습니다!</h3>
                     <p className="text-secondary mb-4">
-                        주문번호: <strong className="text-dark">{orderId}</strong>
+                        주문번호: <strong className="text-dark">{orderNo}</strong>
                     </p>
                     <div className="d-flex justify-content-center gap-3">
                         <Link to="/" className="btn btn-dark px-4 py-2 fw-bold">

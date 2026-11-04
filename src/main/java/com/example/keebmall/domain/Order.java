@@ -20,8 +20,8 @@ public class Order {
     @Column(name = "order_Id")
     private Long id;
 
-//    @Column(name = "order_No", nullable = false, unique = true)
-//    private String orderNo;
+    @Column(name = "order_No", nullable = false, unique = true)
+    private String orderNo;
 
     @ManyToOne(fetch = LAZY) // 한회원이주문을 여러개 하니까
     @JoinColumn(name = "mbr_id", nullable = false)
@@ -39,5 +39,16 @@ public class Order {
     @OneToMany(mappedBy = "order", cascade = CascadeType.ALL)
     private List<OrderItem> orderItems = new ArrayList<>();
 
+    // 상품 총 금액
+    @Column(name = "product_total", nullable = false)
+    private int productTotal;
+
+    // 배송비
+    @Column(name = "shipping_fee")
+    private int shippingFee;
+
+    // 최종 결제 금액
+    @Column(name = "total_amount", nullable = false)
+    private int totalAmount;
 
 }

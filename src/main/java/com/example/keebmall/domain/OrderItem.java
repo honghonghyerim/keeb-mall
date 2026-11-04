@@ -28,10 +28,23 @@ public class OrderItem {
     @JoinColumn(name = "prod_Id", nullable = false)
     private Product product;
 
-    private String prodName;
-
     private int totalPayamnt;
     private int amount;
+
+    // 구매 당시 가격
+    private String prodName;
+
+    // 구매 당시 상품 단가
+    @Column(name = "purch_price", nullable = false)
+    private int purchPrice;
+
+    // 구매 당시 옵션 색상
+    @Column(name = "kbd_color")
+    private String kbdColor;
+
+    // 구매 당시 옵션 배열
+    @Column(name = "kbd_layout")
+    private String kbdLayout;
 
     public OrderItem(Order order, Member member, Product product, int totalPayamnt, int amount) {
         this.order = order;

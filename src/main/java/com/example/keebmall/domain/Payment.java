@@ -15,15 +15,13 @@ public class Payment {
     @Column(name = "pay_Id")
     private Long id;
 
-//    @Column(name = "pay_No", nullable = false, unique = true)
-//    private String payNo;
-
-    @OneToOne(fetch = FetchType.LAZY)
+    // 한 회원은 여러 결제를 할 수 있음
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "mbr_id", nullable = false)
     private Member member;
 
     @OneToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "order_Id", nullable = false)
+    @JoinColumn(name = "order_Id", nullable = false, unique = true)
     private Order order;
 
     private String payMthd;
@@ -31,7 +29,11 @@ public class Payment {
     private String payStatus;
     private LocalDateTime payDate;
 
-    public Payment(Long id, Member member, Order order, String payMthd, int totalPayamnt, String payStatus, LocalDateTime payDate) {
+    // PG사 결제 식별자
+    @Column(name = "pg_pay_id", unique = true)
+    private String pgPayId;
+
+    public Payment(Long id, Member member, Order order, String payMthd, int totalPayamnt, String payStatus, LocalDateTime payDate, String pgPayId) {
         this.id = id;
         this.member = member;
         this.order = order;
@@ -39,9 +41,10 @@ public class Payment {
         this.totalPayamnt = totalPayamnt;
         this.payStatus = payStatus;
         this.payDate = payDate;
+        this.pgPayId = pgPayId;
     }
 
-    protected Payment() {
+    public Payment() {
 
     }
 }

@@ -3,14 +3,15 @@ import { useLocation, useNavigate, Link } from 'react-router-dom';
 import axios from "axios";
 import HeaderNav from '../components/HeaderNav';
 import { checkSessionApi } from '../api/authApi';
+import * as PortOne from "@portone/browser-sdk/v2";
 import '../css/Cart.css';
 
 function Order() {
     const location = useLocation();
     const navigate = useNavigate();
 
-    // 1. 장바구니나 상세페이지에서 넘어온 주문 상품 목록 (없으면 빈 배열)
     const orderItems = location.state?.orderItems || [];
+    const directPurchase = location.state?.directPurchase === true;
 
     // 2. 주문자 정보 State
     const [ordererName, setOrdererName] = useState('');
@@ -127,8 +128,8 @@ function Order() {
         (acc, item) => acc + item.price * item.count,
         0
     );
-    const shippingFee = totalProductPrice >= 50000 || totalProductPrice === 0 ? 0 : 3000;
-    const finalTotalPrice = totalProductPrice + shippingFee;
+    const shippingFee = 0;
+    const finalTotalPrice = totalProductPrice;
 
     // 결제하기 버튼 클릭
     const handleSubmitOrder = async (e) => {
@@ -169,6 +170,7 @@ function Order() {
             .filter(id => id !== null && id !== undefined); // ★ 유효한 ID만 추출!
 
         const orderData = {
+            directPurchase,
             orderer: {
                 name: ordererName,
                 phone: `${ordererPhone1}-${ordererPhone2}-${ordererPhone3}`
@@ -185,7 +187,8 @@ function Order() {
             totalPrice: finalTotalPrice,
             itemName,
             cartItemIds, // ★ Clean한 ID 배열 전달
-            items: orderItems
+            items: orderItems,
+
         };
         alert(`결제하시겠습니까?`);
 
@@ -207,51 +210,66 @@ function Order() {
                 alert('결제 준비 중 오류가 발생했습니다.');
             }
         } else if (paymentMethod === 'card') {
-            const { IMP } = window;
-            if (!IMP) {
-                alert("결제 모듈을 불러오는 중입니다. 잠시 후 다시 시도해 주세요.");
-                return;
-            }
+            try {
+                const readyRes = await axios.post(
+                    "/api/payment/card/ready",
+                    orderData,
+                    { withCredentials: true }
+                );
 
-            // ★ 찾으신 V1 고객사 식별코드 (예: "imp12345678")
-            IMP.init("imp50621224");
+                const {
+                    paymentId,
+                    orderName,
+                    totalAmount
+                } = readyRes.data;
 
-            const timeStamp = new Date().toISOString().replace(/[-:T.]/g, "").slice(0, 14);
-            const randomNum = Math.floor(1000 + Math.random() * 9000);
-            const orderId = `ORD_${timeStamp}_${randomNum}`;
+                // 2. 포트원 카드결제 요청
+                const response = await PortOne.requestPayment({
+                    storeId: 'store-968ba7dc-39d9-4a1c-ae9d-41efb006c353',
+                    channelKey: 'channel-key-c83f11a5-e5ae-4e5f-9e54-d479aac7ab31',
+                    paymentId: paymentId,
+                    orderName: orderName,
+                    totalAmount: totalAmount,
+                    currency: "CURRENCY_KRW",
+                    payMethod: "CARD",
+                    customer: {
+                        fullName: ordererName,
+                        phoneNumber: `${ordererPhone1}-${ordererPhone2}-${ordererPhone3}`
+                    },
+                });
 
-            IMP.request_pay({
-                pg: "html5_inicis",           // KG이니시스 기본 PG 코드
-                pay_method: "card",            // 카드 결제
-                merchant_uid: orderId,         // 주문번호
-                name: itemName,                // 상품명
-                amount: finalTotalPrice,       // 결제금액
-                buyer_name: ordererName,       // 주문자 이름
-                buyer_tel: `${ordererPhone1}-${ordererPhone2}-${ordererPhone3}`,
-            }, async (rsp) => {
-                if (rsp.success) {
-                    try {
-                        // 백엔드 카드 결제 검증 API 호출
-                        const res = await axios.post("/api/payment/verify", {
-                            impUid: rsp.imp_uid,
-                            merchantUid: rsp.merchant_uid,
-                            cartItemIds: cartItemIds
-                        }, { withCredentials: true });
-
-                        if (res.status === 200) {
-                            alert("카드 결제가 완료되었습니다!");
-                            navigate(`/order/success?orderId=${rsp.merchant_uid}`);
-                        }
-                    } catch (err) {
-                        console.error("카드 결제 처리 에러:", err);
-                        alert("결제 처리 중 에러가 발생했습니다.");
-                    }
-                } else {
-                    alert(`결제 실패: ${rsp.error_msg}`);
+                // 3. 결제 취소 또는 실패 확인
+                if (response?.code != null) {
+                    alert(`결제 실패: ${response.message ?? "결제가 취소되었습니다."}`);
+                    return;
                 }
-            });
-        }
 
+                // 4. 서버에서 실제 결제 상태 및 금액 검증
+                const verifyRes = await axios.post(
+                    "/api/payment/card/verify",
+                    {
+                        paymentId: paymentId
+                    },
+                    {withCredentials: true}
+                );
+
+                if (verifyRes.status === 200) {
+                    alert("카드 결제가 완료되었습니다!");
+
+                    navigate(
+                        `/order/success?orderId=${verifyRes.data.orderId}&orderNo=${encodeURIComponent(verifyRes.data.orderNo)}`
+                    );
+                }
+
+            } catch (error) {
+                console.error("카드 결제 처리 오류:", error);
+
+                const message =
+                    error.response?.data || "카드 결제 처리 중 오류가 발생했습니다.";
+
+                alert(message);
+            }
+        }
 
     };
 

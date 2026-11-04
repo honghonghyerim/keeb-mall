@@ -30,3 +30,6 @@ kakaopay:
   admin-key: f61b5c23fa57afa19fb3f247ea110d61
   ready-url: https://kapi.kakao.com/v1/payment/ready
   approve-url: https://kapi.kakao.com/v1/payment/approve
+
+portone:
+  api-secret: ${PORTONE_API_SECRET}

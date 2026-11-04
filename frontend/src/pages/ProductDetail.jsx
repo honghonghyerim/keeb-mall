@@ -123,6 +123,54 @@ function ProductDetail() {
         }
     };
 
+    //구매하기
+    const handleBuyNow = async () => {
+        // 로그인 확인
+        try {
+            await checkSessionApi();
+        } catch (error) {
+            alert('로그인 후 이용해주세요.');
+            return;
+        }
+
+        // 키보드 옵션 확인
+        if (isKeyboard) {
+            if (!selectedLayout) {
+                alert('키보드 옵션을 선택해주세요!');
+                return;
+            }
+
+            if (!selectedColor) {
+                alert('색상을 선택해주세요!');
+                return;
+            }
+
+            if (!selectedOption) {
+                alert('선택한 키보드 옵션을 확인해주세요.');
+                return;
+            }
+        }
+
+        // 주문 페이지에 전달할 상품 정보
+        const orderItem = {
+            productId: product.id,
+            productName: product.name,
+            imgUrl: product.imgUrl,
+            price: unitPrice,
+            count: quantity,
+            optionId: selectedOption ? selectedOption.id : null,
+            kbdLayout: selectedLayout || product.kbdLayout || '',
+            kbdColor: selectedColor || product.kbdColor || ''
+        };
+
+        navigate('/order', {
+            state: {
+                orderItems: [orderItem],
+                directPurchase: true
+            }
+        });
+    };
+
     if (loading) {
         return (
             <div className="bg-light min-vh-100">
@@ -240,7 +288,7 @@ function ProductDetail() {
                         <button type="button" className="btn btn-cart" onClick={handleAddToCart}>
                             장바구니
                         </button>
-                        <button type="button" className="btn btn-buy">
+                        <button type="button" className="btn btn-buy" onClick={handleBuyNow}>
                             구매하기
                         </button>
                     </div>

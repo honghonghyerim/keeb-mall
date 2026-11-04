@@ -5,6 +5,7 @@ import org.springframework.http.*;
 import org.springframework.stereotype.Service;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
+import org.springframework.web.client.HttpStatusCodeException;
 import org.springframework.web.client.RestTemplate;
 
 import java.util.Map;
@@ -79,6 +80,46 @@ public class KakaoPayService {
         } catch (org.springframework.web.client.HttpStatusCodeException e) {
             System.err.println("★ 카카오페이 승인 에러 상세: " + e.getResponseBodyAsString());
             throw new RuntimeException("카카오페이 결제 승인 실패: " + e.getResponseBodyAsString(), e);
+        }
+    }
+
+    // 카카오페이 결제 취소
+    public Map<String, Object> cancelKakaoPay(String tid, int cancelAmount) {
+
+        RestTemplate restTemplate = new RestTemplate();
+
+        HttpHeaders headers = new HttpHeaders();
+        headers.set("Authorization", "KakaoAK " + adminKey);
+        headers.setContentType(MediaType.APPLICATION_FORM_URLENCODED);
+
+        MultiValueMap<String, String> params = new LinkedMultiValueMap<>();
+        params.add("cid", cid);
+        params.add("tid", tid);
+        params.add("cancel_amount", String.valueOf(cancelAmount));
+        params.add("cancel_tax_free_amount", "0");
+
+        HttpEntity<MultiValueMap<String, String>> request =
+                new HttpEntity<>(params, headers);
+
+        try {
+            ResponseEntity<Map> response = restTemplate.postForEntity(
+                    "https://kapi.kakao.com/v1/payment/cancel",
+                    request,
+                    Map.class
+            );
+
+            Map<String, Object> result = response.getBody();
+
+            if (result == null ||
+                    !"CANCEL_PAYMENT".equals(result.get("status"))) {
+                throw new IllegalStateException("카카오페이 결제 취소에 실패했습니다.");
+            }
+
+            return result;
+
+        } catch (HttpStatusCodeException e) {
+            System.err.println("카카오페이 취소 오류: " + e.getResponseBodyAsString());
+            throw new IllegalStateException("카카오페이 결제 취소 API 호출에 실패했습니다.", e);
         }
     }
 }
