@@ -269,6 +269,100 @@ function Order() {
 
                 alert(message);
             }
+        } else if (paymentMethod === 'transfer') {
+            const readyRes = await axios.post(
+                "/api/payment/card/ready",
+                orderData,
+                { withCredentials: true }
+            );
+
+            const { paymentId, orderName, totalAmount } = readyRes.data;
+
+            const response = await PortOne.requestPayment({
+                storeId: 'store-968ba7dc-39d9-4a1c-ae9d-41efb006c353',
+                channelKey: 'channel-key-5a6b1ebc-8019-485e-a2eb-f44eec64dc25',
+                paymentId,
+                orderName,
+                totalAmount,
+                currency: "CURRENCY_KRW",
+                payMethod: "TRANSFER",
+                customer: {
+                    fullName: ordererName,
+                    phoneNumber: `${ordererPhone1}-${ordererPhone2}-${ordererPhone3}`
+                },
+            });
+
+            if (response?.code != null) {
+                alert(response.message || "계좌이체가 취소되었거나 실패했습니다.");
+                return;
+            }
+
+            const verifyRes = await axios.post(
+                "/api/payment/card/verify",
+                { paymentId },
+                { withCredentials: true }
+            );
+
+            if (verifyRes.status === 200) {
+                alert("실시간 계좌이체가 완료되었습니다!");
+                navigate(`/order/success?orderId=${verifyRes.data.orderId}&orderNo=${encodeURIComponent(verifyRes.data.orderNo)}`);
+            }
+        } else if (paymentMethod === 'phone') {
+            try {
+                const readyRes = await axios.post(
+                    "/api/payment/card/ready",
+                    orderData,
+                    { withCredentials: true }
+                );
+
+                const {
+                    paymentId,
+                    orderName,
+                    totalAmount,
+                    shopUserId
+                } = readyRes.data;
+
+                const response = await PortOne.requestPayment({
+                    storeId: 'store-968ba7dc-39d9-4a1c-ae9d-41efb006c353',
+                    channelKey: 'channel-key-d55be5f7-1c66-4d6c-af27-f6aba5bb956d',
+                    paymentId,
+                    orderName,
+                    totalAmount,
+                    currency: "CURRENCY_KRW",
+                    payMethod: "MOBILE",
+                    customer: {
+                        fullName: ordererName,
+                        phoneNumber: `${ordererPhone1}${ordererPhone2}${ordererPhone3}`
+                    }
+                });
+
+                if (response?.code != null) {
+                    alert(`휴대폰 결제 실패: ${response.message ?? "결제가 취소되었습니다."}`);
+                    return;
+                }
+
+                const verifyRes = await axios.post(
+                    "/api/payment/card/verify",
+                    { paymentId },
+                    { withCredentials: true }
+                );
+
+                if (verifyRes.status === 200) {
+                    alert("휴대폰 결제가 완료되었습니다!");
+
+                    navigate(
+                        `/order/success?orderId=${verifyRes.data.orderId}&orderNo=${encodeURIComponent(verifyRes.data.orderNo)}`
+                    );
+                }
+
+            } catch (error) {
+                console.error("휴대폰 결제 처리 오류:", error);
+
+                const message =
+                    error.response?.data || "휴대폰 결제 처리 중 오류가 발생했습니다.";
+
+                alert(message);
+            }
         }
 
     };
@@ -542,7 +636,7 @@ function Order() {
                         <div className="card-body p-4">
                             <div className="d-flex flex-wrap gap-5">
                                 <div className="form-check">
-                                <input
+                                    <input
                                         type="radio"
                                         className="form-check-input"
                                         name="paymentMethod"
@@ -574,13 +668,13 @@ function Order() {
                                         type="radio"
                                         className="form-check-input"
                                         name="paymentMethod"
-                                        id="bank"
-                                        value="bank"
-                                        checked={paymentMethod === 'bank'}
+                                        id="transfer"
+                                        value="transfer"
+                                        checked={paymentMethod === 'transfer'}
                                         onChange={(e) => setPaymentMethod(e.target.value)}
                                     />
-                                    <label className="form-check-label fw-bold" htmlFor="bank">
-                                        무통장입금
+                                    <label className="form-check-label fw-bold" htmlFor="transfer">
+                                        계좌이체
                                     </label>
                                 </div>
                                 <div className="form-check">
@@ -605,7 +699,7 @@ function Order() {
                     <div className="card shadow-sm mb-4 border border-secondary-subtle">
                         <div className="card-body p-4 text-center">
                             <div className="d-inline-flex align-items-center gap-2">
-                                <input
+                            <input
                                     type="checkbox"
                                     className="form-check-input my-0"
                                     style={{ width: '20px', height: '20px', cursor: 'pointer' }}

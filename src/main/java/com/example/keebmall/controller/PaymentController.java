@@ -428,6 +428,18 @@ public class PaymentController {
 
             String portonePaymentId = paymentId.replace("-", "");
 
+            String selectedPaymentMethod =
+                    String.valueOf(requestData.get("paymentMethod"));
+
+            String portonePayMethod = switch (selectedPaymentMethod) {
+                case "card" -> "CARD";
+                case "transfer" -> "TRANSFER";
+                case "phone" -> "MOBILE";
+                default -> throw new IllegalArgumentException(
+                        "지원하지 않는 결제수단입니다."
+                );
+            };
+
             session.setAttribute("portone_paymentId", portonePaymentId);
 
             session.setAttribute("portone_amount", order.totalAmount());
@@ -438,10 +450,13 @@ public class PaymentController {
             session.setAttribute("portone_optionId", orderRequest.optionId());
             session.setAttribute("portone_quantity", orderRequest.quantity());
 
+            session.setAttribute("portone_payMethod", portonePayMethod);
+
             Map<String, Object> result = new HashMap<>();
             result.put("paymentId", portonePaymentId);
             result.put("orderName", order.itemName());
             result.put("totalAmount", order.totalAmount());
+            result.put("shopUserId", String.valueOf(loginUser.getId()));
 
             return ResponseEntity.ok(result);
 
@@ -455,6 +470,9 @@ public class PaymentController {
             @RequestBody Map<String, Object> requestData,
             HttpSession session
     ) {
+        String portonePayMethod =
+                (String) session.getAttribute("portone_payMethod");
+
         Member loginUser =
                 (Member) session.getAttribute("loginUser");
 
@@ -478,7 +496,8 @@ public class PaymentController {
                 || savedPaymentId == null
                 || !paymentId.equals(savedPaymentId)
                 || expectedAmount == null
-                || directPurchase == null) {
+                || directPurchase == null
+                || portonePayMethod == null) {
 
             return ResponseEntity.badRequest()
                     .body("결제 정보를 확인할 수 없습니다.");
@@ -545,6 +564,7 @@ public class PaymentController {
                     session.removeAttribute("portone_productId");
                     session.removeAttribute("portone_optionId");
                     session.removeAttribute("portone_quantity");
+                    session.removeAttribute("portone_payMethod");
 
                     return ResponseEntity.badRequest()
                             .body("결제 금액이 일치하지 않아 결제를 취소했습니다.");
@@ -589,7 +609,7 @@ public class PaymentController {
                         optionId,
                         quantity,
                         expectedAmount,
-                        "CARD",
+                        portonePayMethod,
                         paymentId,
                         LocalDateTime.now()
                 );
@@ -611,7 +631,7 @@ public class PaymentController {
                 result = orderService.completeCartPayment(
                         loginUser.getId(),
                         cartItemIds,
-                        "CARD",
+                        portonePayMethod,
                         paymentId,
                         LocalDateTime.now(),
                         expectedAmount
@@ -626,6 +646,7 @@ public class PaymentController {
             session.removeAttribute("portone_productId");
             session.removeAttribute("portone_optionId");
             session.removeAttribute("portone_quantity");
+            session.removeAttribute("portone_payMethod");
 
             // 6. 결과 반환
             Map<String, Object> resultMap = new HashMap<>();
@@ -663,6 +684,7 @@ public class PaymentController {
                     session.removeAttribute("portone_productId");
                     session.removeAttribute("portone_optionId");
                     session.removeAttribute("portone_quantity");
+                    session.removeAttribute("portone_payMethod");
                 }
             }
 
